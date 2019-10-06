@@ -1,43 +1,44 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="minimum-scale=1.0, width=device-width, maximum-scale=1.0, user-scalable=no" />
     <style>
-        form input{
-            display:block;
+        form input {
+            display: block;
         }
     </style>
     <title>LINE_URL_SCHEME</title>
     <script type="text/javascript">
         //URL Scheme data
         const LINE_URL_SCHEMES = {
-            prefix:"line://",
-            subPrefix:"https://line.me/R/"
+            prefix: "line://",
+            subPrefix: "https://line.me/R/"
         };
-        const LINE_PARAMS=[
+        const LINE_PARAMS = [
             {
-                title:`メッセージを送る`,
-                query:({text_message}) => `msg/text/?${text_message}`,
-                params:{
-                    text_message:{
-                        placeholder:"text message",
-                        value:""
+                title: `メッセージを送る`,
+                query: ({ text_message }) => `msg/text/?${text_message}`,
+                params: {
+                    text_message: {
+                        placeholder: "text message",
+                        value: ""
                     }
                 }
-                
+
             },
             {
-                title:`ボットを指定してメッセージを送る`,
-                query:({LINE_id,text_message})=>`oaMessage/${LINE_id}/?${text_message}`,
-                params:{
-                    LINE_id:{
-                        placeholder:"LINE_id",
-                        value:""
+                title: `ボットを指定してメッセージを送る`,
+                query: ({ LINE_id, text_message }) => `oaMessage/${LINE_id}/?${text_message}`,
+                params: {
+                    LINE_id: {
+                        placeholder: "LINE_id",
+                        value: ""
                     },
-                    text_message:{
-                        placeholder:"text message",
-                        value:""
+                    text_message: {
+                        placeholder: "text message",
+                        value: ""
                     }
                 }
             }
@@ -45,105 +46,121 @@
         const ViewElem = (() => {
             const allInstances = [];
             class ViewElem {
-              constructor(parentElem,params) {
-                this.parentElem = parentElem;
-                this.params = params;
-                this.inputElems = Object.keys(params).map( (key) =>{
-                    const inputElem =document.createElement("input");
-                    const p = params[key];
-                    inputElem.name=key;
-                    inputElem.placeholder=p.placeholder;
-                    inputElem.value = p.value;
-                    return inputElem;
-                });
-                allInstances.push(this);
-              }
-              static hideAll(){
-                allInstances.forEach((view)=>view.hide());
-              }
-              hide(){
-                 this.inputElems.forEach((i)=>i.parentNode ? i.parentNode.removeChild(i):null)
-              }
-              show() {
-                this.inputElems.forEach((i)=> this.parentElem.appendChild(i))
-              }
-              getValues(){
-                  let ret = {};
-                  this.inputElems.forEach((i)=>{
-                      ret[i.name] = i.value;
-                  });
-                  return ret;
-              }
+                constructor(parentElem, params) {
+                    this.parentElem = parentElem;
+                    this.params = params;
+                    this.inputElems = Object.keys(params).map((key) => {
+                        const inputElem = document.createElement("input");
+                        const p = params[key];
+                        inputElem.name = key;
+                        inputElem.placeholder = p.placeholder;
+                        inputElem.value = p.value;
+                        return inputElem;
+                    });
+                    allInstances.push(this);
+                }
+                static hideAll() {
+                    allInstances.forEach((view) => view.hide());
+                }
+                hide() {
+                    this.inputElems.forEach((i) => i.parentNode ? i.parentNode.removeChild(i) : null)
+                }
+                show() {
+                    this.inputElems.forEach((i) => this.parentElem.appendChild(i))
+                }
+                getValues() {
+                    let ret = {};
+                    this.inputElems.forEach((i) => {
+                        ret[i.name] = i.value;
+                    });
+                    return ret;
+                }
             }
             return ViewElem;
         })();
-        
+
         //main logic
-        document.addEventListener("DOMContentLoaded", (event)=>{
+        document.addEventListener("DOMContentLoaded", (event) => {
             const form = document.forms[0];
             const selectElem = form.selectUrlScheme;
             let i = 0;
             const views = [];
-            LINE_PARAMS.forEach((data)=>{
+            LINE_PARAMS.forEach((data) => {
                 const optElem = document.createElement("option");
                 optElem.text = data.title;
                 optElem.value = i++;
                 selectElem.add(optElem);
-                views.push(new ViewElem(form,data.params));
+                views.push(new ViewElem(form, data.params));
             });
-            const selectChangeEvent = (e)=>{
+            const selectChangeEvent = (e) => {
                 const index = e.target.selectedIndex;
-                views.forEach( v => v.hide());
+                views.forEach(v => v.hide());
                 views[index].show();
             };
-            selectChangeEvent({target:{selectedIndex:0}});
-            selectElem.addEventListener("change",selectChangeEvent);
-            form.create.addEventListener("click",(e)=>{
+            selectChangeEvent({ target: { selectedIndex: 0 } });
+            selectElem.addEventListener("change", selectChangeEvent);
+            form.create.addEventListener("click", (e) => {
                 const index = selectElem.selectedIndex;
                 const title = LINE_PARAMS[index].title;
                 let query = LINE_PARAMS[index].query(views[index].getValues());
                 homeIconWindow({
-                    title:title,
-                    URLscheme:LINE_URL_SCHEMES.prefix + query,
-                    subURLscheme:LINE_URL_SCHEMES.subPrefix + query,
-                    image:getImage()
+                    title: title,
+                    URLscheme: LINE_URL_SCHEMES.prefix + query,
+                    subURLscheme: LINE_URL_SCHEMES.subPrefix + query,
+                    image: getImage()
                 });
             });
-           
-            form.callScheme.addEventListener("click",(e)=>{
+
+            form.callScheme.addEventListener("click", (e) => {
                 const index = selectElem.selectedIndex;
                 let query = LINE_PARAMS[index].query(views[index].getValues());
                 location.href = LINE_URL_SCHEMES.prefix + query;
             });
-            
-            document.getElementById("iconText").addEventListener("keyup",(e)=>{
-                setText2Image({iconTexts:e.target.value.split("\n")});
+
+            var iconTextElem = document.getElementById("iconText");
+            var textSizeElem = document.getElementById("textSize");
+            iconTextElem.addEventListener("keyup", (e) => {
+                setText2Image({ iconTexts: iconTextElem.value.split("\n"), size: parseInt(textSizeElem.value) });
+            });
+            textSizeElem.addEventListener("input", (e) => {
+                if (parseInt(textSizeElem.value)) {
+                    setText2Image({ iconTexts: iconTextElem.value.split("\n"), size: parseInt(textSizeElem.value) });
+                }
             });
             setText2Image();
         });
     </script>
-  </head>
-  <body>
-      <form>
-          <h3>LineのURLスキームをホーム画面に登録します。</h3>
-          <select name="selectUrlScheme" style="max-width: 99%;"></select>
-          <button type="button" name="create">ホームアイコン作成</button>
-          <button type="button" name="callScheme">URLスキーム呼び出し</button>
-      </form>
-      <div style="margin-top:20px;">
-          <canvas width="120px" height="120px" style="border-radius: 25px;"></canvas>
-          <div><textarea style="width:120px;" autocomplete="on" rows="3" placeholder="iconText" id="iconText" row></textarea></div>
-      </div>
-  </body>
+</head>
+
+<body>
+    <form>
+        <h3>LineのURLスキームをホーム画面に登録します。</h3>
+        <select name="selectUrlScheme" style="max-width: 99%;"></select>
+        <button type="button" name="create">ホームアイコン作成</button>
+        <button type="button" name="callScheme">URLスキーム呼び出し</button>
+    </form>
+    <div style="margin-top:20px;">
+        <canvas width="120px" height="120px" style="border-radius: 25px;"></canvas>
+        <div>
+            <label for="iconText">アイコンに表示するテキスト</label>
+            <textarea style="width:120px;" autocomplete="on" rows="3" placeholder="iconText" id="iconText"
+                row></textarea>
+            <br>
+            <label for="textSize">テキストのサイズ</label>
+            <input id="textSize" type="range" value="100" min=1 max=200 />
+        </div>
+    </div>
+</body>
+
 </html>
 <script>
     //Gloval Functions
-    function setText2Image({iconTexts=[],size=100,x=10,strokeWidth=5}={}){
+    function setText2Image({ iconTexts = [], size = 100, x = 10, strokeWidth = 5 } = {}) {
         const TEXT_DATA = (iconText) => {
-            iconText = iconText ? iconText.split(" ").join("&#160;"):"&#160;";
+            iconText = iconText ? iconText.split(" ").join("&#160;") : "&#160;";
             return `<tspan x="${x}" dy="1em" stroke-width="${strokeWidth}" stroke="#fff" stroke-linejoin="round">${iconText}</tspan><tspan x="${x}" dy="">${iconText}</tspan>`
         };
-        const IMAGE_DATA = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" version="1" viewBox="0 0 456 456">
+        const IMAGE_DATA = `<svg xmlns="http://www.w3.org/2000/svg" version="1" viewBox="0 0 456 456">
           <path fill="#00c200" d="M0 0h456v456H0z"/>
           <path d="M393 220a84 84 0 0 0 1-23c-4-71-77-127-166-127-92 0-167 59-167 133 0 67 63 123 145 131 5 1 8 5 8 10l-4 32c0 7 7 12 13 9 69-34 111-68 135-98 5-5 20-25 23-31 6-11 10-24 12-36z" fill="#fff"/>
 <text xmlns="http://www.w3.org/2000/svg" x="${x}" font-size="${size}" fill="#00c200" font-weight="bold">
@@ -151,17 +168,19 @@ ${iconTexts.map(TEXT_DATA).join("")}
     </text>
         </svg>`;
         const img = new Image();
-        img.src = IMAGE_DATA;
-        img.onload = function() {
+        var svg = new Blob([IMAGE_DATA], { type: 'image/svg+xml;charset=utf-8' });
+        var url = URL.createObjectURL(svg);
+        img.src = url;
+        img.onload = function () {
             const c = document.querySelector('canvas');
             const ctx = c.getContext('2d');
-            ctx.drawImage(img, 0, 0,120,120);
+            ctx.drawImage(img, 0, 0, 120, 120);
         }
     }
-    function getImage(){
+    function getImage() {
         return document.querySelector("canvas").toDataURL();
     }
-    function homeIconWindow({title,image,URLscheme,subURLscheme}){
+    function homeIconWindow({ title, image, URLscheme, subURLscheme }) {
         window.open("data:text/html;charset=utf-8," + encodeURIComponent(`
     <!DOCTYPE html>
     <html>
