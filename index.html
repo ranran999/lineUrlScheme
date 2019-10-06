@@ -169,7 +169,8 @@ ${iconTexts.map(TEXT_DATA).join("")}
         </svg>`;
         const img = new Image();
         var svg = new Blob([IMAGE_DATA], { type: 'image/svg+xml;charset=utf-8' });
-        var url = URL.createObjectURL(svg);
+        var DOMURL = window.URL || window.webkitURL || window;
+        var url = DOMURL.createObjectURL(svg);
         img.src = url;
         img.onload = function () {
             const c = document.querySelector('canvas');
